@@ -88,10 +88,10 @@ function mongodb_backup_handler {
 
     docker exec $1 "cd /tmp && mkdir -p $dump";
     docker exec $1 "cd /tmp/$dump && mongodump";
-    docker cp $1:/tmp/$dump "`pwd`/mongodbdumps_backups"'
+    docker cp $1:/tmp/$dump `pwd`"/mongodbdumps_backups"
 
     # Publish backup
-    push_backup $1 "mongodb" "`pwd`/mongodbdumps_backups";
+    push_backup $1 "mongodb" `pwd`"/mongodbdumps_backups";
     clear_old_backup $1 "mongodb"
 
     # Post publication cleanup.
