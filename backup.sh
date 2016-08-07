@@ -86,8 +86,8 @@ function mongodb_backup_handler {
     dump=$1"_dump_"`date +%Y-%m-%d`;
     mkdir -p "mongodbdumps_backups";
 
-    docker exec $1 "cd /tmp && mkdir -p $dump";
-    docker exec $1 "cd /tmp/$dump && mongodump";
+    docker exec $1 sh -c "cd /tmp && mkdir -p $dump";
+    docker exec $1 sh -c "cd /tmp/$dump && mongodump";
     docker cp $1:/tmp/$dump `pwd`"/mongodbdumps_backups"
 
     # Publish backup
@@ -106,6 +106,7 @@ function mongodb_backup_handler {
 function gitlab_backup_handler {
     echo "Creation of gitlab backup for container $1";
     mkdir -p "./gitlab_backups";
+    docker exec -t $1 sh -c 'rm /var/opt/gitlab/backups/*';
     docker exec -t $1 sh -c 'gitlab-rake gitlab:backup:create';
     echo "Copying gitlab backups";
     docker cp $1:/var/opt/gitlab/backups/ "`pwd`/gitlab_backups";
