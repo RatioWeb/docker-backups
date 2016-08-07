@@ -156,6 +156,7 @@ done;
 
 
 current_path=$(pwd);
+FILE=`realpath $FILE`
 cd `dirname $0`
 
 # Main loop - go through lines of file and 
