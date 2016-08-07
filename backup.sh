@@ -45,6 +45,22 @@ function generic_backup_handler {
 #
 # - $1 container name
 #
+function postgres_backup_handler {
+    echo "Creation of postgres backup for container $1";
+    dump=$1"_dump_"`date +%Y-%m-%d`".sql";
+    mkdir -p "postgresdumps_backups";
+    docker exec $1 -u postgres sh -c 'exec pg_dumpall' > "./postgresdumps_backups/"$dump;
+    bzip2 "./postgresdumps_backups/"$dump;
+
+    # Publish backup
+    push_backup $1 "postgres" "`pwd`/postgresdumps_backups";
+    clear_old_backup $1 "postgres"
+
+    # Post publication cleanup.
+    rm -rf "./postgresdumps_backups";
+}
+
+
 function mysql_backup_handler {
     echo "Creation of mysql backup for container $1";
     dump=$1"_dump_"`date +%Y-%m-%d`".sql";
@@ -58,6 +74,28 @@ function mysql_backup_handler {
 
     # Post publication cleanup.
     rm -rf "./mysqldumps_backups";
+}
+
+#
+# This function creates backup of mongodb container
+#
+# - $1 container name
+#
+function mongodb_backup_handler {
+    echo "Creation of mongodb backup for container $1";
+    dump=$1"_dump_"`date +%Y-%m-%d`;
+    mkdir -p "mongodbdumps_backups";
+
+    docker exec $1 "cd /tmp && mkdir -p $dump";
+    docker exec $1 "cd /tmp/$dump && mongodump";
+    docker cp $1:/tmp/$dump "`pwd`/mongodbdumps_backups"'
+
+    # Publish backup
+    push_backup $1 "mongodb" "`pwd`/mongodbdumps_backups";
+    clear_old_backup $1 "mongodb"
+
+    # Post publication cleanup.
+    rm -rf "./mongodbdumps_backups";
 }
 
 #
